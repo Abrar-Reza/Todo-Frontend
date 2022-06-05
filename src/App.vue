@@ -2,14 +2,14 @@
   import {onMounted, ref} from 'vue'
   import axios from 'axios'
 
-  const API_URL = 'http://localhost:4000/'
+  const API_URL = 'https://todo-strapi-backend.azurewebsites.net/api/'
 
   const tasks = ref([])
   onMounted(() => {
-    axios.get(API_URL + 'tasks/')
+    axios.get(API_URL + 'tasks?sort[0]=id')
     .then(response => {
-      tasks.value = response.data
-      console.log(response.data)
+      tasks.value = response.data.data
+      console.log(response.data.data)
     })
     .catch(error => {
       console.log(error)
@@ -21,12 +21,14 @@
   function addTask() {
     if (todo.value) {
       axios.post(API_URL + 'tasks/', {
-        todo: todo.value,
-        status: status.value
+        data: {
+          todo: todo.value,
+          status: status.value
+        }
       })
       .then(response => {
         todo.value = ''
-        tasks.value.push(response.data)
+        tasks.value.push(response.data.data)
         console.log(response)
       })
       .catch(error => {
@@ -40,11 +42,13 @@
     const todo = task.todo
 
     axios.put(API_URL + `tasks/${task_id}`, {
-      todo: todo,
-      status: status
+      data: {
+        todo: todo,
+        status: status
+      }
     })
     .then(() => {
-      task.status = status
+      task.attributes.status = status
     })
     .catch(error => {
       console.log(error)
@@ -81,16 +85,16 @@
     <div class="card">
       <ul class="list-group list-group-flush">
         <div v-for="task in tasks" v-bind:key="task.id">
-          <div v-if="task.status === 'todo'">
-            <li class="list-group-item text-center text-capitalize">{{ task.todo }}
+          <div v-if="task.attributes.status === 'todo'">
+            <li class="list-group-item text-center text-capitalize">{{ task.attributes.todo }}
               <button @click="setTaskStatus(task.id, 'done')"  class="btn btn-outline-primary position-absolute top-0 end-0" type="button">
                 Done
               </button>
             </li>
           </div>
 
-          <div v-if="task.status === 'done'">
-            <li class="list-group-item text-decoration-line-through text-center text-capitalize">{{ task.todo }}
+          <div v-if="task.attributes.status === 'done'">
+            <li class="list-group-item text-decoration-line-through text-center text-capitalize">{{ task.attributes.todo }}
               <button @click="setTaskStatus(task.id, 'todo')"  class="btn btn-outline-secondary position-absolute top-0 end-0" type="button">
                 Not Done
               </button>
